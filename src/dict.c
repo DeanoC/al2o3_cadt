@@ -12,6 +12,11 @@ AL2O3_EXTERN_C void CADT_Dict##postfix##Destroy(CADT_Dict##postfix##Handle handl
 	stb_dict##postfix * dict = (stb_dict##postfix *) handle; \
 	stb_dict##postfix##_destroy(dict); \
 } \
+AL2O3_EXTERN_C CADT_Dict##postfix##Handle CADT_Dict##postfix##Clone(CADT_Dict##postfix##Handle handle) {\
+	ASSERT(handle); \
+	stb_dict##postfix * dict = (stb_dict##postfix *) handle; \
+	return (CADT_Dict##postfix##Handle)stb_dict##postfix##_copy(dict); \
+} \
 AL2O3_EXTERN_C size_t CADT_Dict##postfix##Size(CADT_Dict##postfix##Handle handle) { \
 	ASSERT(handle); \
 	stb_dict##postfix const * dict = (stb_dict##postfix const *) handle; \

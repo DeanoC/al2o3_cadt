@@ -5,8 +5,8 @@
 #include "al2o3_cadt/bagofvectors.h"
 
 typedef struct CADT_BagOfVectors {
-	CADT_DictU64Handle tagDictHandle;
-	CADT_VectorHandle vectorOfVectors;
+	CADT_DictU64Handle tagDict;
+	CADT_VectorHandle keys;
 } CADT_BagOfVectors;
 
 
@@ -15,14 +15,14 @@ AL2O3_EXTERN_C CADT_BagOfVectorsHandle CADT_BagOfVectorsCreate() {
 
 	CADT_BagOfVectors* tvec = (CADT_BagOfVectors*)MEMORY_CALLOC(1, sizeof(CADT_BagOfVectors));
 	if (tvec == NULL) return NULL;
-	tvec->tagDictHandle = CADT_DictU64Create();
-	if (tvec->tagDictHandle == NULL) {
+	tvec->tagDict = CADT_DictU64Create();
+	if (tvec->tagDict == NULL) {
 		MEMORY_FREE(tvec);
 		return NULL;
 	}
-	tvec->vectorOfVectors = CADT_VectorCreate(sizeof(CADT_VectorHandle));
-	if (tvec->vectorOfVectors == NULL) {
-		CADT_DictU64Destroy(tvec->tagDictHandle);
+	tvec->keys = CADT_VectorCreate(sizeof(uint64_t));
+	if (tvec->keys == NULL) {
+		CADT_DictU64Destroy(tvec->tagDict);
 		MEMORY_FREE(tvec);
 		return NULL;
 	}
@@ -34,28 +34,49 @@ AL2O3_EXTERN_C void CADT_BagOfVectorsDestroy(CADT_BagOfVectorsHandle handle) {
 	ASSERT(handle);
 	CADT_BagOfVectors* tvec = (CADT_BagOfVectors*)handle;
 
-	for (size_t i = 0; i < CADT_VectorSize(tvec->vectorOfVectors); i++) {
-		CADT_VectorHandle vh = *(CADT_VectorHandle*)CADT_VectorElement(tvec->vectorOfVectors, i);
+	for (size_t i = 0; i < CADT_VectorSize(tvec->keys); i++) {
+		uint64_t key = *(uint64_t*)CADT_VectorAt(tvec->keys, i);
+		CADT_VectorHandle vh = (CADT_VectorHandle)CADT_DictU64Get(tvec->tagDict, key);
 		CADT_VectorDestroy(vh);
 	}
 
-	CADT_VectorDestroy(tvec->vectorOfVectors);
-	CADT_DictU64Destroy(tvec->tagDictHandle);
+	CADT_VectorDestroy(tvec->keys);
+	CADT_DictU64Destroy(tvec->tagDict);
 	MEMORY_FREE(tvec);
 }
+AL2O3_EXTERN_C CADT_BagOfVectorsHandle CADT_BagOfVectorsClone(CADT_BagOfVectorsHandle handle) {
+	ASSERT(handle);
+	CADT_BagOfVectors* ovec = (CADT_BagOfVectors*)handle;
+	CADT_BagOfVectors* nvec = (CADT_BagOfVectors*)MEMORY_CALLOC(1, sizeof(CADT_BagOfVectors));
+	if (nvec == NULL) return NULL;
 
+	nvec->keys = CADT_VectorCreate(sizeof(uint64_t));
+	nvec->tagDict = CADT_DictU64Create();
+
+	for (size_t i = 0; i < CADT_VectorSize(ovec->keys); i++) {
+		uint64_t key = *(uint64_t*)CADT_VectorAt(ovec->keys, i);
+		CADT_VectorHandle ovh = (CADT_VectorHandle)CADT_DictU64Get(ovec->tagDict, key);
+
+		CADT_VectorHandle nvh = CADT_VectorClone(ovh);
+		CADT_BagOfVectorsOwnVector(nvec, key, nvh);
+	}
+	return nvec;
+}
 AL2O3_EXTERN_C CADT_VectorHandle CADT_BagOfVectorsAdd(CADT_BagOfVectorsHandle handle, uint64_t key, size_t elementSize) {
-	ASSERT(CADT_BagOfVectorsKeyExists(handle, key) == false);
+	if (CADT_BagOfVectorsKeyExists(handle, key) == true) {
+		return NULL;
+	}
 
 	CADT_BagOfVectors* tvec = (CADT_BagOfVectors*)handle;
-	ASSERT(tvec->tagDictHandle);
+	ASSERT(tvec->tagDict);
+	ASSERT(tvec->keys)
+
 	CADT_VectorHandle vh = CADT_VectorCreate(elementSize);
-	bool okay = CADT_DictU64Add(tvec->tagDictHandle, key, (uint64_t)vh);
+	bool okay = CADT_DictU64Add(tvec->tagDict, key, (uint64_t)vh);
 	if (okay) {
-		CADT_VectorPushElement(tvec->vectorOfVectors, &vh);
+		CADT_VectorPushElement(tvec->keys, &key);
 		return vh;
-	}
-	else {
+	}	else {
 		CADT_VectorDestroy(vh);
 		return NULL;
 	}
@@ -66,48 +87,56 @@ AL2O3_EXTERN_C void CADT_BagOfVectorsOwnVector(CADT_BagOfVectorsHandle handle, u
 	ASSERT(CADT_BagOfVectorsKeyExists(handle, key) == false);
 
 	CADT_BagOfVectors* tvec = (CADT_BagOfVectors*)handle;
-	bool okay = CADT_DictU64Add(tvec->tagDictHandle, key, (uint64_t)vector);
+	bool okay = CADT_DictU64Add(tvec->tagDict, key, (uint64_t)vector);
 	if (okay) {
-		CADT_VectorPushElement(tvec->vectorOfVectors, &vector);
+		CADT_VectorPushElement(tvec->keys, &key);
 	}
 }
 
 AL2O3_EXTERN_C void CADT_BagOfVectorsRemove(CADT_BagOfVectorsHandle handle, uint64_t key) {
 	ASSERT(CADT_BagOfVectorsKeyExists(handle, key) == true);
 	CADT_BagOfVectors* tvec = (CADT_BagOfVectors*)handle;
-	CADT_VectorHandle vh = CADT_BagOfVectorsGet(handle, key);
-	for (size_t i = 0; i < CADT_VectorSize(tvec->vectorOfVectors); ++i) {
-		CADT_VectorHandle vvh = *((CADT_VectorHandle*)CADT_VectorElement(tvec->vectorOfVectors, i));
-		if (vh == vvh) {
-			CADT_VectorRemove(tvec->vectorOfVectors, i);
+	CADT_VectorHandle vh = CADT_BagOfVectorsLookup(handle, key);
+	for (size_t i = 0; i < CADT_VectorSize(tvec->keys); ++i) {
+		uint64_t k = *(uint64_t*)CADT_VectorAt(tvec->keys, i);
+		if (k == key) {
+			CADT_VectorRemove(tvec->keys, i);
 			break;
 		}
 	}
 
-	CADT_DictU64Remove(tvec->tagDictHandle, key);
+	CADT_DictU64Remove(tvec->tagDict, key);
 	CADT_VectorDestroy(vh);
 }
 
 AL2O3_EXTERN_C bool CADT_BagOfVectorsKeyExists(CADT_BagOfVectorsHandle handle, uint64_t key) {
 	ASSERT(handle);
 	CADT_BagOfVectors* tvec = (CADT_BagOfVectors*) handle;
-	return CADT_DictU64KeyExists(tvec->tagDictHandle, key);
+	return CADT_DictU64KeyExists(tvec->tagDict, key);
 }
 
-AL2O3_EXTERN_C size_t CADT_BagOfVectorsKeyCount(CADT_BagOfVectorsHandle handle) {
+AL2O3_EXTERN_C size_t CADT_BagOfVectorsSize(CADT_BagOfVectorsHandle handle) {
 	ASSERT(handle);
 	CADT_BagOfVectors* tvec = (CADT_BagOfVectors*) handle;
-	return CADT_DictU64Size(tvec->tagDictHandle);
+	return CADT_VectorSize(tvec->keys);
 }
+
+AL2O3_EXTERN_C CADT_VectorHandle CADT_BagOfVectorsAt(CADT_BagOfVectorsHandle handle, size_t index) {
+	ASSERT(handle);
+	CADT_BagOfVectors* tvec = (CADT_BagOfVectors*)handle;
+	uint64_t key = *(uint64_t*) CADT_VectorAt(tvec->keys, index);
+	return (CADT_VectorHandle)CADT_DictU64Get(tvec->tagDict, key);
+}
+
 
 AL2O3_EXTERN_C uint64_t CADT_BagOfVectorsGetKey(CADT_BagOfVectorsHandle handle, size_t index) {
 	ASSERT(handle);
 	CADT_BagOfVectors* tvec = (CADT_BagOfVectors*) handle;
-	return CADT_DictU64GetByIndex(tvec->tagDictHandle, index);
+	return *(uint64_t*)CADT_VectorAt(tvec->keys, index);
 }
 
-AL2O3_EXTERN_C CADT_VectorHandle CADT_BagOfVectorsGet(CADT_BagOfVectorsHandle handle, uint64_t key) {
+AL2O3_EXTERN_C CADT_VectorHandle CADT_BagOfVectorsLookup(CADT_BagOfVectorsHandle handle, uint64_t key) {
 	ASSERT(CADT_BagOfVectorsKeyExists(handle, key) == true);
 	CADT_BagOfVectors* tvec = (CADT_BagOfVectors*) handle;
-	return (CADT_VectorHandle)CADT_DictU64Get(tvec->tagDictHandle, key);
+	return (CADT_VectorHandle)CADT_DictU64Get(tvec->tagDict, key);
 }

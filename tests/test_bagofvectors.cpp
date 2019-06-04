@@ -24,7 +24,7 @@ TEST_CASE("CADT_BagOfVectors add/exists", "[CADT CADT_BagOfVectors]") {
 
 	CADT_BagOfVectorsDestroy(handle);
 }
-/*
+
 TEST_CASE("CADT_BagOfVectors lookup", "[CADT CADT_BagOfVectors]") {
 	CADT_BagOfVectorsHandle handle = CADT_BagOfVectorsCreate();
 	REQUIRE(handle);
@@ -32,16 +32,15 @@ TEST_CASE("CADT_BagOfVectors lookup", "[CADT CADT_BagOfVectors]") {
 	CADT_BagOfVectorsAdd(handle,
 													 TestTag | '0',
 													 10);
-	CADT_CVectorHandle v0 = CADT_BagOfVectorsGet(handle, TestTag | '0');
-	REQUIRE(CADT_CVectorElementSizeFrom(v0) == 10);
+	CADT_VectorHandle v0 = CADT_BagOfVectorsLookup(handle, TestTag | '0');
+	REQUIRE(CADT_VectorElementSize(v0) == 10);
 	CADT_BagOfVectorsAdd(handle,
 													 TestTag | '1',
 													 20);
-	CADT_CVectorHandle v0a = CADT_BagOfVectorsGet(handle, TestTag | '0');
-	CADT_CVectorHandle v1a = CADT_BagOfVectorsGet(handle, TestTag | '1');
-	REQUIRE(CADT_CVectorElementSizeFrom(v0a) == 10);
-	REQUIRE(CADT_CVectorElementSizeFrom(v1a) == 20);
+	CADT_VectorHandle v0a = CADT_BagOfVectorsLookup(handle, TestTag | '0');
+	CADT_VectorHandle v1a = CADT_BagOfVectorsLookup(handle, TestTag | '1');
+	REQUIRE(CADT_VectorElementSize(v0a) == 10);
+	REQUIRE(CADT_VectorElementSize(v1a) == 20);
 
 	CADT_BagOfVectorsDestroy(handle);
 }
-*/

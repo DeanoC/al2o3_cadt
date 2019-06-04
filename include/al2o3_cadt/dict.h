@@ -8,6 +8,7 @@
 typedef struct CADT_Dict##postfix *CADT_Dict##postfix##Handle; \
 AL2O3_EXTERN_C CADT_Dict##postfix##Handle CADT_Dict##postfix##Create(); \
 AL2O3_EXTERN_C void CADT_Dict##postfix##Destroy(CADT_Dict##postfix##Handle handle); \
+AL2O3_EXTERN_C CADT_Dict##postfix##Handle CADT_Dict##postfix##Clone(CADT_Dict##postfix##Handle handle); \
 AL2O3_EXTERN_C size_t CADT_Dict##postfix##Size(CADT_Dict##postfix##Handle handle); \
 AL2O3_EXTERN_C valuetype CADT_Dict##postfix##GetByIndex(CADT_Dict##postfix##Handle handle, size_t index); \
 AL2O3_EXTERN_C bool CADT_Dict##postfix##IsEmpty(CADT_Dict##postfix##Handle handle); \

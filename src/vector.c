@@ -27,6 +27,16 @@ AL2O3_EXTERN_C void CADT_VectorDestroy(CADT_VectorHandle handle) {
 	MEMORY_FREE(vector);
 }
 
+AL2O3_EXTERN_C CADT_VectorHandle CADT_VectorClone(CADT_VectorHandle handle) {
+	ASSERT(handle != NULL);
+	CADT_Vector* ovector = (CADT_Vector*)handle;
+	CADT_Vector* nvector = (CADT_Vector*)CADT_VectorCreate(ovector->elementSize);
+	if (nvector == NULL) return NULL;
+	CADT_VectorResize(nvector, ovector->size);
+	memcpy(nvector->data, ovector->data, ovector->size * ovector->elementSize);
+	return nvector;
+}
+
 AL2O3_EXTERN_C size_t CADT_VectorElementSize(CADT_VectorHandle handle) {
 	ASSERT(handle != NULL);
 	CADT_Vector const* vector = (CADT_Vector const*)handle;
@@ -46,6 +56,38 @@ AL2O3_EXTERN_C void CADT_VectorResize(CADT_VectorHandle handle, size_t size) {
 	CADT_VectorReserve(handle, size);
 	vector->size = size;
 }
+AL2O3_EXTERN_C void CADT_VectorResizeWithZero(CADT_VectorHandle handle, size_t size) {
+	ASSERT(handle != NULL);
+	CADT_Vector* vector = (CADT_Vector*)handle;
+
+	CADT_VectorReserve(handle, size);
+	if (size > vector->size) {
+		size_t const dif = size - vector->size;
+		memset(vector->data + (vector->size * vector->elementSize), 0, dif * vector->elementSize);
+	}
+	vector->size = size;
+}
+
+AL2O3_EXTERN_C void CADT_VectorResizeWithDefault(CADT_VectorHandle handle, size_t size, void const* defaultData) {
+	if (!defaultData) {
+		CADT_VectorResizeWithZero(handle, size);
+		return;
+	}
+
+	ASSERT(handle != NULL);
+	CADT_Vector* vector = (CADT_Vector*)handle;
+
+	CADT_VectorReserve(handle, size);
+	if (size > vector->size) {
+		size_t const dif = size - vector->size;
+		for (size_t i = 0; i < dif; ++i) {
+			memcpy(vector->data + ((vector->size + i) * vector->elementSize), defaultData, vector->elementSize);
+		}
+	}
+
+	vector->size = size;
+}
+
 AL2O3_EXTERN_C bool CADT_VectorIsEmpty(CADT_VectorHandle handle) {
 	ASSERT(handle != NULL);
 	CADT_Vector const* vector = (CADT_Vector const*)handle;
@@ -76,7 +118,7 @@ AL2O3_EXTERN_C void CADT_VectorReserve(CADT_VectorHandle handle, size_t size) {
 	}
 }
 
-AL2O3_EXTERN_C void* CADT_VectorElement(CADT_VectorHandle handle, size_t index) {
+AL2O3_EXTERN_C void* CADT_VectorAt(CADT_VectorHandle handle, size_t index) {
 	ASSERT(handle != NULL);
 	CADT_Vector const* vector = (CADT_Vector const*)handle;
 	ASSERT(index < vector->size);
@@ -91,7 +133,7 @@ AL2O3_EXTERN_C size_t CADT_VectorPushElement(CADT_VectorHandle handle, void* ele
 	CADT_VectorResize(handle, vector->size+1);
 	ASSERT(index < vector->size);
 
-	memcpy(CADT_VectorElement(handle, index), element, vector->elementSize);
+	memcpy(CADT_VectorAt(handle, index), element, vector->elementSize);
 	return index;
 }
 
@@ -100,7 +142,7 @@ AL2O3_EXTERN_C void CADT_VectorPopElementFrom(CADT_VectorHandle handle, void* ou
 	CADT_Vector * vector = (CADT_Vector *)handle;
 	ASSERT(vector->size > 0);
 	size_t const index = vector->size-1;
-	memcpy(out, CADT_VectorElement(handle, index), vector->elementSize);
+	memcpy(out, CADT_VectorAt(handle, index), vector->elementSize);
 	CADT_VectorResize(handle, vector->size-1);
 }
 
@@ -116,7 +158,7 @@ AL2O3_EXTERN_C void* CADT_VectorPeekElement(CADT_VectorHandle handle) {
 	CADT_Vector const* vector = (CADT_Vector const*)handle;
 	ASSERT(vector->size > 0);
 	size_t const index = vector->size-1;
-	return CADT_VectorElement(handle, index);
+	return CADT_VectorAt(handle, index);
 }
 
 AL2O3_EXTERN_C void CADT_VectorRemove(CADT_VectorHandle handle, size_t index) {
@@ -137,6 +179,30 @@ AL2O3_EXTERN_C void CADT_VectorRemove(CADT_VectorHandle handle, size_t index) {
 
 	vector->size = vector->size - 1;
 	return;
+}
+
+AL2O3_EXTERN_C void CADT_VectorReplace(CADT_VectorHandle handle, size_t srcIndex, size_t dstIndex) {
+	ASSERT(handle != NULL);
+	CADT_Vector const* vector = (CADT_Vector const*)handle;
+	memcpy(CADT_VectorAt(handle, dstIndex), CADT_VectorAt(handle, srcIndex), vector->elementSize);
+}
+
+AL2O3_EXTERN_C void CADT_VectorSwap(CADT_VectorHandle handle, size_t index0, size_t index1) {
+	ASSERT(handle != NULL);
+	CADT_Vector const* vector = (CADT_Vector const*)handle;
+	void* tmp = STACK_ALLOC(vector->elementSize);
+	memcpy(tmp, CADT_VectorAt(handle, index0), vector->elementSize);
+	memcpy(CADT_VectorAt(handle, index0), CADT_VectorAt(handle, index1), vector->elementSize);
+	memcpy(CADT_VectorAt(handle, index1), tmp, vector->elementSize);
+
+}
+
+
+AL2O3_EXTERN_C void CADT_VectorSwapRemove(CADT_VectorHandle handle, size_t index) {
+	ASSERT(handle != NULL);
+	CADT_Vector const* vector = (CADT_Vector const*)handle;
+	CADT_VectorReplace(handle, vector->size - 1, index);
+	CADT_VectorResize(handle, vector->size - 1);
 }
 
 AL2O3_EXTERN_C void* CADT_VectorData(CADT_VectorHandle handle) {
