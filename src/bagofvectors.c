@@ -72,8 +72,8 @@ AL2O3_EXTERN_C CADT_VectorHandle CADT_BagOfVectorsAdd(CADT_BagOfVectorsHandle ha
 	ASSERT(tvec->keys)
 
 	CADT_VectorHandle vh = CADT_VectorCreate(elementSize);
-	bool okay = CADT_DictU64Add(tvec->tagDict, key, (uint64_t)vh);
-	if (okay) {
+	bool okayAddKey = CADT_DictU64Add(tvec->tagDict, key, (uint64_t)vh);
+	if (okayAddKey) {
 		CADT_VectorPushElement(tvec->keys, &key);
 		return vh;
 	}	else {
