@@ -38,4 +38,7 @@ AL2O3_EXTERN_C void CADT_VectorRemove(CADT_VectorHandle handle, size_t index);
 // swaps the last element into index and resizes, faster than remove
 AL2O3_EXTERN_C void CADT_VectorSwapRemove(CADT_VectorHandle handle, size_t index);
 
+// returns the index of a peice data or -1 if not found. Linear find so slow for large vectors
+AL2O3_EXTERN_C size_t CADT_VectorFind(CADT_VectorHandle handle, void* data);
+
 #endif // AL2O3_CADT_MESH_H

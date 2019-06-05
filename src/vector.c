@@ -210,3 +210,14 @@ AL2O3_EXTERN_C void* CADT_VectorData(CADT_VectorHandle handle) {
 	CADT_Vector const* vector = (CADT_Vector const*)handle;
 	return vector->data;
 }
+
+AL2O3_EXTERN_C size_t CADT_VectorFind(CADT_VectorHandle handle, void* data) {
+	ASSERT(handle != NULL);
+	CADT_Vector const* vector = (CADT_Vector const*)handle;
+	for (size_t i = 0; i < vector->size; ++i) {
+		if (memcpy(data, vector->data + (i * vector->elementSize), vector->elementSize) == 0) {
+			return i;
+		}
+	}
+	return (size_t)-1;
+}
