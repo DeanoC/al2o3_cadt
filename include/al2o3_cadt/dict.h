@@ -18,7 +18,8 @@ AL2O3_EXTERN_C bool CADT_Dict##postfix##KeyExists(CADT_Dict##postfix##Handle han
 AL2O3_EXTERN_C valuetype CADT_Dict##postfix##Get(CADT_Dict##postfix##Handle handle, keytype const key); \
 AL2O3_EXTERN_C bool CADT_Dict##postfix##Lookup(CADT_Dict##postfix##Handle handle, keytype const key, valuetype* out); \
 AL2O3_EXTERN_C bool CADT_Dict##postfix##Add(CADT_Dict##postfix##Handle handle, keytype const key, valuetype const in); \
-AL2O3_EXTERN_C void CADT_Dict##postfix##Remove(CADT_Dict##postfix##Handle handle, keytype const key);
+AL2O3_EXTERN_C void CADT_Dict##postfix##Remove(CADT_Dict##postfix##Handle handle, keytype const key); \
+AL2O3_EXTERN_C void CADT_Dict##postfix##Replace(CADT_Dict##postfix##Handle handle, keytype const key, valuetype const in);
 
 CADT_DECLARE_DICT(U32, uint32_t, uint32_t)
 CADT_DECLARE_DICT(U64, uint64_t, uint64_t)

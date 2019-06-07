@@ -77,6 +77,11 @@ AL2O3_EXTERN_C void CADT_Dict##postfix##Remove(CADT_Dict##postfix##Handle handle
 	stb_dict##postfix * dict = (stb_dict##postfix *) handle; \
 	type dummy; \
 	stb_dict##postfix##_remove(dict, key, &dummy); \
+} \
+AL2O3_EXTERN_C void CADT_Dict##postfix##Replace(CADT_Dict##postfix##Handle handle, type const key, type const in) { \
+	ASSERT(handle); \
+	stb_dict##postfix * dict = (stb_dict##postfix *) handle; \
+	return stb_dict##postfix##_update(dict, key, in);  \
 }
 
 CDICT_IMPL(U32, uint32_t)
