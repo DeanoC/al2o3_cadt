@@ -35,7 +35,7 @@ AL2O3_EXTERN_C type CADT_Dict##postfix##GetByIndex(CADT_Dict##postfix##Handle ha
 	stb_dict##postfix const * dict = (stb_dict##postfix const *) handle; \
 	size_t count = 0; \
 	for (size_t i = 0; i < dict->limit; ++i) { \
-		if (dict->table[i].k != -1l) { \
+		if (dict->table[i].k != ~0) { \
 			if (count == index) \
 				return dict->table[i].v; \
 			else \
@@ -81,7 +81,7 @@ AL2O3_EXTERN_C void CADT_Dict##postfix##Remove(CADT_Dict##postfix##Handle handle
 AL2O3_EXTERN_C void CADT_Dict##postfix##Replace(CADT_Dict##postfix##Handle handle, type const key, type const in) { \
 	ASSERT(handle); \
 	stb_dict##postfix * dict = (stb_dict##postfix *) handle; \
-	return stb_dict##postfix##_update(dict, key, in);  \
+	stb_dict##postfix##_update(dict, key, in);  \
 }
 
 CDICT_IMPL(U32, uint32_t)
