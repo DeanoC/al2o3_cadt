@@ -16,12 +16,14 @@ set(Interface
 		vector.h
 		dict.h
 		bagofvectors.h
+		freelist.h
 		)
 
 set(Src
 		vector.c
 		dict.c
 		bagofvectors.c
+		freelist.c
 		)
 
 set(Deps
@@ -38,6 +40,7 @@ set( Tests
 		test_vector.cpp
 		test_dict.cpp
 		test_bagofvectors.cpp
+		test_freelist.cpp
 		)
 set( TestDeps
 		utils_simple_logmanager
