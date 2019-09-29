@@ -20,7 +20,12 @@ AL2O3_EXTERN_C CADT_FreeListHandle CADT_FreeListCreate(size_t elementSize, size_
 	ASSERT(elementSize >= sizeof(uintptr_t));
 	ASSERT(capacity > 0);
 
-	size_t const size = ((sizeof(CADT_FreeList) + sizeof(elementSize) * capacity) + sizeof(uint64_t))/ sizeof(uint64_t);
+	if(elementSize < sizeof(uintptr_t)) {
+		LOGWARNING("Free List element size has minimum %i", sizeof(uintptr_t));
+		elementSize = sizeof(uintptr_t);
+	}
+
+	size_t const size = sizeof(CADT_FreeList) + (elementSize * capacity);
 	CADT_FreeList *freelist = MEMORY_CALLOC(1, size);
 	if (freelist == NULL)
 		return NULL;

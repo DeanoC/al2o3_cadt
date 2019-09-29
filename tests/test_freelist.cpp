@@ -16,4 +16,3 @@ TEST_CASE("CADT_FreeList Single Alloc/Free", "[CADT CADT_FreeList]") {
 	REQUIRE(*d == 1);
 	CADT_FreeListDestroy(handle);
 }
-
