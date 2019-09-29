@@ -4,7 +4,7 @@ on: [push]
 
 jobs:
   test:
-    name: Build and run unittests on ${{ matrix.os }}
+    name: Unit Tests on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
