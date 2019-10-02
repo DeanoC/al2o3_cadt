@@ -197,7 +197,6 @@ AL2O3_EXTERN_C void CADT_VectorSwap(CADT_VectorHandle handle, size_t index0, siz
 
 }
 
-
 AL2O3_EXTERN_C void CADT_VectorSwapRemove(CADT_VectorHandle handle, size_t index) {
 	ASSERT(handle != NULL);
 	CADT_Vector const* vector = (CADT_Vector const*)handle;
@@ -215,7 +214,7 @@ AL2O3_EXTERN_C size_t CADT_VectorFind(CADT_VectorHandle handle, void* data) {
 	ASSERT(handle != NULL);
 	CADT_Vector const* vector = (CADT_Vector const*)handle;
 	for (size_t i = 0; i < vector->size; ++i) {
-		if (memcpy(data, vector->data + (i * vector->elementSize), vector->elementSize) == 0) {
+		if (memcmp(data, vector->data + (i * vector->elementSize), vector->elementSize) == 0) {
 			return i;
 		}
 	}
