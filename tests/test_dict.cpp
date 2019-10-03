@@ -52,6 +52,7 @@ TEST_CASE("CDict" #postfix " remove", "[CADT CDict]") { \
 	CADT_Dict##postfix##Remove(handle, 5); \
 	REQUIRE(!CADT_Dict##postfix##KeyExists(handle, 5)); \
 	REQUIRE(CADT_Dict##postfix##IsEmpty(handle)); \
+	CADT_Dict##postfix##Destroy(handle); \
 } \
 TEST_CASE("CDict" #postfix " reserve", "[CADT CDict]") { \
 	CADT_Dict##postfix##Handle handle = CADT_Dict##postfix##Create(); \

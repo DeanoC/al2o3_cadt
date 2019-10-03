@@ -102,7 +102,7 @@ TEST_CASE("CVector IsEmpty", "[CADT CVector]") {
 	CADT_VectorPopAndDiscardElement(handle);
 	CADT_VectorPopAndDiscardElement(handle);
 	REQUIRE(CADT_VectorIsEmpty(handle));
-
+	CADT_VectorDestroy(handle);
 }
 
 TEST_CASE("CVector Remove", "[CADT CVector]") {
@@ -129,6 +129,8 @@ TEST_CASE("CVector Remove", "[CADT CVector]") {
 	REQUIRE(CADT_VectorSize(handle) == 1);
 	CADT_VectorRemove(handle, 0);
 	REQUIRE(CADT_VectorSize(handle) == 0);
+
+	CADT_VectorDestroy(handle);
 }
 
 TEST_CASE("CVector Swap/Replace/Remove", "[CADT CVector]") {

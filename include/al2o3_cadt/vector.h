@@ -3,10 +3,14 @@
 #define AL2O3_CADT_VECTOR_H
 
 #include "al2o3_platform/platform.h"
+#include "al2o3_memory/memory.h"
+typedef struct Memory_Allocator Memory_Allocator;
 
 typedef struct CADT_Vector *CADT_VectorHandle;
 
 AL2O3_EXTERN_C CADT_VectorHandle CADT_VectorCreate(size_t elementSize);
+AL2O3_EXTERN_C CADT_VectorHandle CADT_VectorCreateWithAllocator(size_t elementSize, Memory_Allocator* allocator);
+
 AL2O3_EXTERN_C void CADT_VectorDestroy(CADT_VectorHandle handle);
 AL2O3_EXTERN_C CADT_VectorHandle CADT_VectorClone(CADT_VectorHandle handle);
 
@@ -40,5 +44,11 @@ AL2O3_EXTERN_C void CADT_VectorSwapRemove(CADT_VectorHandle handle, size_t index
 
 // returns the index of a peice data or -1 if not found. Linear find so slow for large vectors
 AL2O3_EXTERN_C size_t CADT_VectorFind(CADT_VectorHandle handle, void* data);
+
+#if MEMORY_TRACKING_SETUP == 1
+#define CADT_VectorCreate(size) (Memory_TrackerPushNextSrcLoc(__FILE__, __LINE__, __FUNCTION__)) ? CADT_VectorCreate(size) : false
+#define CADT_VectorCreateWithAllocator(size, allocator) (Memory_TrackerPushNextSrcLoc(__FILE__, __LINE__, __FUNCTION__)) ? CADT_VectorCreateWithAllocator(size, allocator) : false
+#define CADT_VectorReserve(handle, size) (Memory_TrackerPushNextSrcLoc(__FILE__, __LINE__, __FUNCTION__)) ? CADT_VectorReserve(handle, size) : false
+#endif
 
 #endif // AL2O3_CADT_MESH_H

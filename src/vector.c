@@ -7,24 +7,17 @@ typedef struct CADT_Vector {
 	size_t elementSize;
 	size_t capacity;
 	size_t size;
+	Memory_Allocator* allocator;
 
 	uint8_t* data;
 } CADT_Vector;
-
-AL2O3_EXTERN_C CADT_VectorHandle CADT_VectorCreate(size_t elementSize) {
-	CADT_Vector* vector = MEMORY_CALLOC(1, sizeof(CADT_Vector));
-	if(vector == NULL) return NULL;
-	vector->elementSize = elementSize;
-	return vector;
-}
-
 AL2O3_EXTERN_C void CADT_VectorDestroy(CADT_VectorHandle handle) {
 	ASSERT(handle != NULL);
 	CADT_Vector* vector = (CADT_Vector*)handle;
 	if(vector->data != NULL) {
-		MEMORY_FREE(vector->data);
+		MEMORY_ALLOCATOR_FREE(vector->allocator, vector->data);
 	}
-	MEMORY_FREE(vector);
+	MEMORY_ALLOCATOR_FREE(vector->allocator, vector);
 }
 
 AL2O3_EXTERN_C CADT_VectorHandle CADT_VectorClone(CADT_VectorHandle handle) {
@@ -99,24 +92,6 @@ AL2O3_EXTERN_C size_t CADT_VectorCapacity(CADT_VectorHandle handle) {
 	return vector->capacity;
 }
 
-AL2O3_EXTERN_C void CADT_VectorReserve(CADT_VectorHandle handle, size_t size) {
-	ASSERT(handle != NULL);
-	CADT_Vector * vector = (CADT_Vector *)handle;
-
-	// reserve always grews unless ShrinkToFit
-	if(size <= vector->capacity) return;
-
-	void* oldData = vector->data;
-	size_t const oldCapacity = (vector->capacity) ? vector->capacity : 1;
-	size_t const newCapacity = Math_MaxSizeT(oldCapacity*2, size);
-	vector->capacity = newCapacity;
-	vector->data = (uint8_t*) MEMORY_CALLOC(newCapacity, vector->elementSize);
-	ASSERT(vector->data);
-	if(oldData) {
-		memcpy(vector->data, oldData, vector->size * vector->elementSize);
-		MEMORY_FREE(oldData);
-	}
-}
 
 AL2O3_EXTERN_C void* CADT_VectorAt(CADT_VectorHandle handle, size_t index) {
 	ASSERT(handle != NULL);
@@ -194,7 +169,6 @@ AL2O3_EXTERN_C void CADT_VectorSwap(CADT_VectorHandle handle, size_t index0, siz
 	memcpy(tmp, CADT_VectorAt(handle, index0), vector->elementSize);
 	memcpy(CADT_VectorAt(handle, index0), CADT_VectorAt(handle, index1), vector->elementSize);
 	memcpy(CADT_VectorAt(handle, index1), tmp, vector->elementSize);
-
 }
 
 AL2O3_EXTERN_C void CADT_VectorSwapRemove(CADT_VectorHandle handle, size_t index) {
@@ -219,4 +193,50 @@ AL2O3_EXTERN_C size_t CADT_VectorFind(CADT_VectorHandle handle, void* data) {
 		}
 	}
 	return (size_t)-1;
+}
+
+#if MEMORY_TRACKING_SETUP == 1
+#undef CADT_VectorCreate
+#undef CADT_VectorCreateWithAllocator
+#undef CADT_VectorReserve
+#endif
+
+AL2O3_EXTERN_C CADT_VectorHandle CADT_VectorCreate(size_t elementSize) {
+	return CADT_VectorCreateWithAllocator(elementSize, &Memory_GlobalAllocator);
+}
+
+AL2O3_EXTERN_C CADT_VectorHandle CADT_VectorCreateWithAllocator(size_t elementSize, Memory_Allocator* allocator) {
+#if MEMORY_TRACKING_SETUP == 1
+	// call the allocator direct, so that the line and file comes free the caller
+	CADT_Vector* vector = allocator->calloc(1, sizeof(CADT_Vector));
+#else
+	CADT_Vector* vector = MEMORY_ALLOCATOR_CALLOC(allocator,1, sizeof(CADT_Vector));
+#endif
+	if(vector == NULL) return NULL;
+	vector->elementSize = elementSize;
+	vector->allocator = allocator;
+	return vector;
+}
+
+AL2O3_EXTERN_C void CADT_VectorReserve(CADT_VectorHandle handle, size_t size) {
+	ASSERT(handle != NULL);
+	CADT_Vector * vector = (CADT_Vector *)handle;
+
+	// reserve always grews unless ShrinkToFit
+	if(size <= vector->capacity) return;
+
+	void* oldData = vector->data;
+	size_t const oldCapacity = (vector->capacity) ? vector->capacity : 1;
+	size_t const newCapacity = Math_MaxSizeT(oldCapacity*2, size);
+	vector->capacity = newCapacity;
+#if MEMORY_TRACKING_SETUP == 1
+	vector->data = (uint8_t*) vector->allocator->calloc(newCapacity, vector->elementSize);
+#else
+	vector->data = (uint8_t*) MEMORY_ALLOCATOR_CALLOC(vector->allocator, newCapacity, vector->elementSize);
+#endif
+	ASSERT(vector->data);
+	if(oldData) {
+		memcpy(vector->data, oldData, vector->size * vector->elementSize);
+		MEMORY_ALLOCATOR_FREE(vector->allocator, oldData);
+	}
 }
