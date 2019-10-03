@@ -46,9 +46,9 @@ AL2O3_EXTERN_C void CADT_VectorSwapRemove(CADT_VectorHandle handle, size_t index
 AL2O3_EXTERN_C size_t CADT_VectorFind(CADT_VectorHandle handle, void* data);
 
 #if MEMORY_TRACKING_SETUP == 1
-#define CADT_VectorCreate(size) (Memory_TrackerPushNextSrcLoc(__FILE__, __LINE__, __FUNCTION__)) ? CADT_VectorCreate(size) : false
-#define CADT_VectorCreateWithAllocator(size, allocator) (Memory_TrackerPushNextSrcLoc(__FILE__, __LINE__, __FUNCTION__)) ? CADT_VectorCreateWithAllocator(size, allocator) : false
-#define CADT_VectorReserve(handle, size) (Memory_TrackerPushNextSrcLoc(__FILE__, __LINE__, __FUNCTION__)) ? CADT_VectorReserve(handle, size) : false
+#define CADT_VectorCreate(size) (Memory_TrackerPushNextSrcLoc(__FILE__, __LINE__, __FUNCTION__)) ? CADT_VectorCreate(size) : NULL
+#define CADT_VectorCreateWithAllocator(size, allocator) (Memory_TrackerPushNextSrcLoc(__FILE__, __LINE__, __FUNCTION__)) ? CADT_VectorCreateWithAllocator(size, allocator) : NULL
+#define CADT_VectorReserve(handle, size) (Memory_TrackerPushNextSrcLoc(__FILE__, __LINE__, __FUNCTION__)) ? CADT_VectorReserve(handle, size) : NULL
 #endif
 
 #endif // AL2O3_CADT_MESH_H
