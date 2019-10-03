@@ -29,7 +29,7 @@ AL2O3_EXTERN_C size_t CADT_VectorPushElementCloneToEnd(CADT_VectorHandle handle,
 AL2O3_EXTERN_C void CADT_VectorReplace(CADT_VectorHandle handle, size_t srcIndex,	size_t dstIndex);
 AL2O3_EXTERN_C void CADT_VectorSwap(CADT_VectorHandle handle, size_t index0, size_t index1);
 
-AL2O3_EXTERN_C void CADT_VectorPopElementFrom(CADT_VectorHandle handle, void* out);
+AL2O3_EXTERN_C void CADT_VectorPopElement(CADT_VectorHandle handle, void* out);
 AL2O3_EXTERN_C void CADT_VectorPopAndDiscardElement(CADT_VectorHandle handle);
 AL2O3_EXTERN_C void* CADT_VectorPeekElement(CADT_VectorHandle handle);
 

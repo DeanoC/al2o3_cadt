@@ -137,7 +137,7 @@ AL2O3_EXTERN_C size_t CADT_VectorPushElement(CADT_VectorHandle handle, void* ele
 	return index;
 }
 
-AL2O3_EXTERN_C void CADT_VectorPopElementFrom(CADT_VectorHandle handle, void* out) {
+AL2O3_EXTERN_C void CADT_VectorPopElement(CADT_VectorHandle handle, void* out) {
 	ASSERT(handle != NULL);
 	CADT_Vector * vector = (CADT_Vector *)handle;
 	ASSERT(vector->size > 0);
