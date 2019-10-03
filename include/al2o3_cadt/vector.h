@@ -48,7 +48,7 @@ AL2O3_EXTERN_C size_t CADT_VectorFind(CADT_VectorHandle handle, void* data);
 #if MEMORY_TRACKING_SETUP == 1
 #define CADT_VectorCreate(size) (Memory_TrackerPushNextSrcLoc(__FILE__, __LINE__, __FUNCTION__)) ? CADT_VectorCreate(size) : NULL
 #define CADT_VectorCreateWithAllocator(size, allocator) (Memory_TrackerPushNextSrcLoc(__FILE__, __LINE__, __FUNCTION__)) ? CADT_VectorCreateWithAllocator(size, allocator) : NULL
-#define CADT_VectorReserve(handle, size) (Memory_TrackerPushNextSrcLoc(__FILE__, __LINE__, __FUNCTION__)) ? CADT_VectorReserve(handle, size) : NULL
+#define CADT_VectorReserve(handle, size) (Memory_TrackerPushNextSrcLoc(__FILE__, __LINE__, __FUNCTION__)), CADT_VectorReserve(handle, size))
 #endif
 
 #endif // AL2O3_CADT_MESH_H
