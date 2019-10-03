@@ -82,7 +82,7 @@ TEST_CASE("CVector Push/Pop/Peek", "[CADT CVector]") {
 	REQUIRE( CADT_VectorCapacity(handle) >= 1);
 	REQUIRE( memcmp(CADT_VectorPeekElement(handle), e, 10) == 0);
 	uint8_t r[10];
-	CADT_VectorPopElementFrom(handle, r);
+	CADT_VectorPopElement(handle, r);
 	REQUIRE( CADT_VectorSize(handle) == 0);
 	REQUIRE( CADT_VectorCapacity(handle) >= 1);
 	REQUIRE( memcmp(r, e, 10) == 0);
