@@ -101,7 +101,7 @@ AL2O3_EXTERN_C void* CADT_VectorAt(CADT_VectorHandle handle, size_t index) {
 	return vector->data + (index * vector->elementSize);
 }
 
-AL2O3_EXTERN_C size_t CADT_VectorPushElement(CADT_VectorHandle handle, void* element) {
+AL2O3_EXTERN_C size_t CADT_VectorPushElement(CADT_VectorHandle handle, void const* element) {
 	ASSERT(handle != NULL);
 	CADT_Vector * vector = (CADT_Vector *)handle;
 	size_t const index = vector->size;
@@ -184,7 +184,7 @@ AL2O3_EXTERN_C void* CADT_VectorData(CADT_VectorHandle handle) {
 	return vector->data;
 }
 
-AL2O3_EXTERN_C size_t CADT_VectorFind(CADT_VectorHandle handle, void* data) {
+AL2O3_EXTERN_C size_t CADT_VectorFind(CADT_VectorHandle handle, void const* data) {
 	ASSERT(handle != NULL);
 	CADT_Vector const* vector = (CADT_Vector const*)handle;
 	for (size_t i = 0; i < vector->size; ++i) {

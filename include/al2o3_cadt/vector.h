@@ -28,7 +28,7 @@ AL2O3_EXTERN_C void CADT_VectorReserve(CADT_VectorHandle handle, size_t size);
 
 AL2O3_EXTERN_C void* CADT_VectorAt(CADT_VectorHandle handle, size_t index);
 
-AL2O3_EXTERN_C size_t CADT_VectorPushElement(CADT_VectorHandle handle, void* element);
+AL2O3_EXTERN_C size_t CADT_VectorPushElement(CADT_VectorHandle handle, void const* element);
 AL2O3_EXTERN_C size_t CADT_VectorPushElementCloneToEnd(CADT_VectorHandle handle, size_t srcIndex);
 AL2O3_EXTERN_C void CADT_VectorReplace(CADT_VectorHandle handle, size_t srcIndex,	size_t dstIndex);
 AL2O3_EXTERN_C void CADT_VectorSwap(CADT_VectorHandle handle, size_t index0, size_t index1);
@@ -43,7 +43,7 @@ AL2O3_EXTERN_C void CADT_VectorRemove(CADT_VectorHandle handle, size_t index);
 AL2O3_EXTERN_C void CADT_VectorSwapRemove(CADT_VectorHandle handle, size_t index);
 
 // returns the index of a peice data or -1 if not found. Linear find so slow for large vectors
-AL2O3_EXTERN_C size_t CADT_VectorFind(CADT_VectorHandle handle, void* data);
+AL2O3_EXTERN_C size_t CADT_VectorFind(CADT_VectorHandle handle, void const	* data);
 
 #if MEMORY_TRACKING_SETUP == 1
 #define CADT_VectorCreate(size) ((Memory_TrackerPushNextSrcLoc(__FILE__, __LINE__, __FUNCTION__)) ? CADT_VectorCreate(size) : NULL)
