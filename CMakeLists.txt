@@ -18,20 +18,7 @@ SET_MIN_VERSIONS()
 set(LibName al2o3_cadt)
 project(${LibName})
 
-set(Interface
-		vector.h
-		dict.h
-		bagofvectors.h
-		freelist.h
-		)
-
-set(Src
-		vector.c
-		dict.c
-		bagofvectors.c
-		freelist.c
-		)
-
+file(GLOB_RECURSE Src CONFIGURE_DEPENDS src/*.c src/*.cpp include/*.h include/*.hpp)
 set(Deps
 		al2o3_platform
 		al2o3_memory
@@ -39,17 +26,11 @@ set(Deps
 		al2o3_stb
 		utils_misccpp
 		)
-ADD_LIB(${LibName} "${Interface}" "${Src}" "${Deps}")
+ADD_LIB2(${LibName} "${Src}" "${Deps}")
 
-set( Tests
-		runner.cpp
-		test_vector.cpp
-		test_dict.cpp
-		test_bagofvectors.cpp
-		test_freelist.cpp
-		)
+file( GLOB_RECURSE Tests CONFIGURE_DEPENDS tests/*.cpp )
 set( TestDeps
 		utils_simple_logmanager
-		al2o3_catch2 )
-ADD_LIB_TESTS(${LibName} "${Interface}" "${Tests}" "${TestDeps}")
-
+		al2o3_catch2
+		)
+ADD_LIB2_TESTS(${LibName} "${Tests}" "${TestDeps}")

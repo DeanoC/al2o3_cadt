@@ -1,6 +1,4 @@
 #pragma once
-#ifndef GFX_CADT_BAGOFVECTORS_H
-#define GFX_CADT_BAGOFVECTORS_H
 
 #include "al2o3_platform/platform.h"
 #include "al2o3_cadt/vector.h"
@@ -19,9 +17,4 @@ AL2O3_EXTERN_C CADT_VectorHandle CADT_BagOfVectorsLookup(CADT_BagOfVectorsHandle
 
 AL2O3_EXTERN_C size_t CADT_BagOfVectorsSize(CADT_BagOfVectorsHandle handle);
 AL2O3_EXTERN_C CADT_VectorHandle CADT_BagOfVectorsAt(CADT_BagOfVectorsHandle handle, size_t index);
-
-// current implementation makes this slow!
 AL2O3_EXTERN_C uint64_t CADT_BagOfVectorsGetKey(CADT_BagOfVectorsHandle handle, size_t index);
-
-
-#endif

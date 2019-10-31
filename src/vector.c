@@ -11,9 +11,8 @@ typedef struct CADT_Vector {
 
 	uint8_t* data;
 } CADT_Vector;
-AL2O3_EXTERN_C void CADT_VectorDestroy(CADT_VectorHandle handle) {
-	ASSERT(handle != NULL);
-	CADT_Vector* vector = (CADT_Vector*)handle;
+AL2O3_EXTERN_C void CADT_VectorDestroy(CADT_VectorHandle vector) {
+	ASSERT(vector != NULL);
 	if(vector->data != NULL) {
 		MEMORY_ALLOCATOR_FREE(vector->allocator, vector->data);
 	}
@@ -30,6 +29,11 @@ AL2O3_EXTERN_C CADT_VectorHandle CADT_VectorClone(CADT_VectorHandle handle) {
 	return nvector;
 }
 
+AL2O3_EXTERN_C Memory_Allocator* CADT_VectorGetAllocator(CADT_VectorHandle vector) {
+	ASSERT(vector != NULL);
+	return vector->allocator;
+}
+
 AL2O3_EXTERN_C size_t CADT_VectorElementSize(CADT_VectorHandle handle) {
 	ASSERT(handle != NULL);
 	CADT_Vector const* vector = (CADT_Vector const*)handle;
@@ -42,18 +46,16 @@ AL2O3_EXTERN_C size_t CADT_VectorSize(CADT_VectorHandle handle) {
 	return vector->size;
 }
 
-AL2O3_EXTERN_C void CADT_VectorResize(CADT_VectorHandle handle, size_t size) {
-	ASSERT(handle != NULL);
-	CADT_Vector * vector = (CADT_Vector *)handle;
+AL2O3_EXTERN_C void CADT_VectorResize(CADT_VectorHandle vector, size_t size) {
+	ASSERT(vector != NULL);
 
-	CADT_VectorReserve(handle, size);
+	CADT_VectorReserve(vector, size);
 	vector->size = size;
 }
-AL2O3_EXTERN_C void CADT_VectorResizeWithZero(CADT_VectorHandle handle, size_t size) {
-	ASSERT(handle != NULL);
-	CADT_Vector* vector = (CADT_Vector*)handle;
+AL2O3_EXTERN_C void CADT_VectorResizeWithZero(CADT_VectorHandle vector, size_t size) {
+	ASSERT(vector != NULL);
 
-	CADT_VectorReserve(handle, size);
+	CADT_VectorReserve(vector, size);
 	if (size > vector->size) {
 		size_t const dif = size - vector->size;
 		memset(vector->data + (vector->size * vector->elementSize), 0, dif * vector->elementSize);
@@ -61,16 +63,15 @@ AL2O3_EXTERN_C void CADT_VectorResizeWithZero(CADT_VectorHandle handle, size_t s
 	vector->size = size;
 }
 
-AL2O3_EXTERN_C void CADT_VectorResizeWithDefault(CADT_VectorHandle handle, size_t size, void const* defaultData) {
+AL2O3_EXTERN_C void CADT_VectorResizeWithDefault(CADT_VectorHandle vector, size_t size, void const* defaultData) {
 	if (!defaultData) {
-		CADT_VectorResizeWithZero(handle, size);
+		CADT_VectorResizeWithZero(vector, size);
 		return;
 	}
 
-	ASSERT(handle != NULL);
-	CADT_Vector* vector = (CADT_Vector*)handle;
+	ASSERT(vector != NULL);
 
-	CADT_VectorReserve(handle, size);
+	CADT_VectorReserve(vector, size);
 	if (size > vector->size) {
 		size_t const dif = size - vector->size;
 		for (size_t i = 0; i < dif; ++i) {
@@ -81,64 +82,56 @@ AL2O3_EXTERN_C void CADT_VectorResizeWithDefault(CADT_VectorHandle handle, size_
 	vector->size = size;
 }
 
-AL2O3_EXTERN_C bool CADT_VectorIsEmpty(CADT_VectorHandle handle) {
-	ASSERT(handle != NULL);
-	CADT_Vector const* vector = (CADT_Vector const*)handle;
+AL2O3_EXTERN_C bool CADT_VectorIsEmpty(CADT_VectorHandle vector) {
+	ASSERT(vector != NULL);
 	return (vector->size == 0);
 }
-AL2O3_EXTERN_C size_t CADT_VectorCapacity(CADT_VectorHandle handle) {
-	ASSERT(handle != NULL);
-	CADT_Vector const* vector = (CADT_Vector const*)handle;
+AL2O3_EXTERN_C size_t CADT_VectorCapacity(CADT_VectorHandle vector) {
+	ASSERT(vector != NULL);
 	return vector->capacity;
 }
 
 
-AL2O3_EXTERN_C void* CADT_VectorAt(CADT_VectorHandle handle, size_t index) {
-	ASSERT(handle != NULL);
-	CADT_Vector const* vector = (CADT_Vector const*)handle;
+AL2O3_EXTERN_C void* CADT_VectorAt(CADT_VectorHandle vector, size_t index) {
+	ASSERT(vector != NULL);
 	ASSERT(index < vector->size);
 	ASSERT(vector->data);
 	return vector->data + (index * vector->elementSize);
 }
 
-AL2O3_EXTERN_C size_t CADT_VectorPushElement(CADT_VectorHandle handle, void const* element) {
-	ASSERT(handle != NULL);
-	CADT_Vector * vector = (CADT_Vector *)handle;
+AL2O3_EXTERN_C size_t CADT_VectorPushElement(CADT_VectorHandle vector, void const* element) {
+	ASSERT(vector != NULL);
 	size_t const index = vector->size;
-	CADT_VectorResize(handle, vector->size+1);
+	CADT_VectorResize(vector, vector->size+1);
 	ASSERT(index < vector->size);
 
-	memcpy(CADT_VectorAt(handle, index), element, vector->elementSize);
+	memcpy(CADT_VectorAt(vector, index), element, vector->elementSize);
 	return index;
 }
 
-AL2O3_EXTERN_C void CADT_VectorPopElement(CADT_VectorHandle handle, void* out) {
-	ASSERT(handle != NULL);
-	CADT_Vector * vector = (CADT_Vector *)handle;
+AL2O3_EXTERN_C void CADT_VectorPopElement(CADT_VectorHandle vector, void* out) {
+	ASSERT(vector != NULL);
 	ASSERT(vector->size > 0);
 	size_t const index = vector->size-1;
-	memcpy(out, CADT_VectorAt(handle, index), vector->elementSize);
-	CADT_VectorResize(handle, vector->size-1);
+	memcpy(out, CADT_VectorAt(vector, index), vector->elementSize);
+	CADT_VectorResize(vector, vector->size-1);
 }
 
-AL2O3_EXTERN_C void CADT_VectorPopAndDiscardElement(CADT_VectorHandle handle) {
-	ASSERT(handle != NULL);
-	CADT_Vector * vector = (CADT_Vector *)handle;
+AL2O3_EXTERN_C void CADT_VectorPopAndDiscardElement(CADT_VectorHandle vector) {
+	ASSERT(vector != NULL);
 	ASSERT(vector->size > 0);
-	CADT_VectorResize(handle, vector->size-1);
+	CADT_VectorResize(vector, vector->size-1);
 }
 
-AL2O3_EXTERN_C void* CADT_VectorPeekElement(CADT_VectorHandle handle) {
-	ASSERT(handle != NULL);
-	CADT_Vector const* vector = (CADT_Vector const*)handle;
+AL2O3_EXTERN_C void* CADT_VectorPeekElement(CADT_VectorHandle vector) {
+	ASSERT(vector != NULL);
 	ASSERT(vector->size > 0);
 	size_t const index = vector->size-1;
-	return CADT_VectorAt(handle, index);
+	return CADT_VectorAt(vector, index);
 }
 
-AL2O3_EXTERN_C void CADT_VectorRemove(CADT_VectorHandle handle, size_t index) {
-	ASSERT(handle != NULL);
-	CADT_Vector * vector = (CADT_Vector *)handle;
+AL2O3_EXTERN_C void CADT_VectorRemove(CADT_VectorHandle vector, size_t index) {
+	ASSERT(vector != NULL);
 	ASSERT(index < vector->size);
 	if (vector->size == 1) {
 		vector->size = 0;
@@ -156,37 +149,32 @@ AL2O3_EXTERN_C void CADT_VectorRemove(CADT_VectorHandle handle, size_t index) {
 	return;
 }
 
-AL2O3_EXTERN_C void CADT_VectorReplace(CADT_VectorHandle handle, size_t srcIndex, size_t dstIndex) {
-	ASSERT(handle != NULL);
-	CADT_Vector const* vector = (CADT_Vector const*)handle;
-	memcpy(CADT_VectorAt(handle, dstIndex), CADT_VectorAt(handle, srcIndex), vector->elementSize);
+AL2O3_EXTERN_C void CADT_VectorReplace(CADT_VectorHandle vector, size_t srcIndex, size_t dstIndex) {
+	ASSERT(vector != NULL);
+	memcpy(CADT_VectorAt(vector, dstIndex), CADT_VectorAt(vector, srcIndex), vector->elementSize);
 }
 
-AL2O3_EXTERN_C void CADT_VectorSwap(CADT_VectorHandle handle, size_t index0, size_t index1) {
-	ASSERT(handle != NULL);
-	CADT_Vector const* vector = (CADT_Vector const*)handle;
+AL2O3_EXTERN_C void CADT_VectorSwap(CADT_VectorHandle vector, size_t index0, size_t index1) {
+	ASSERT(vector != NULL);
 	void* tmp = STACK_ALLOC(vector->elementSize);
-	memcpy(tmp, CADT_VectorAt(handle, index0), vector->elementSize);
-	memcpy(CADT_VectorAt(handle, index0), CADT_VectorAt(handle, index1), vector->elementSize);
-	memcpy(CADT_VectorAt(handle, index1), tmp, vector->elementSize);
+	memcpy(tmp, CADT_VectorAt(vector, index0), vector->elementSize);
+	memcpy(CADT_VectorAt(vector, index0), CADT_VectorAt(vector, index1), vector->elementSize);
+	memcpy(CADT_VectorAt(vector, index1), tmp, vector->elementSize);
 }
 
-AL2O3_EXTERN_C void CADT_VectorSwapRemove(CADT_VectorHandle handle, size_t index) {
-	ASSERT(handle != NULL);
-	CADT_Vector const* vector = (CADT_Vector const*)handle;
-	CADT_VectorReplace(handle, vector->size - 1, index);
-	CADT_VectorResize(handle, vector->size - 1);
+AL2O3_EXTERN_C void CADT_VectorSwapRemove(CADT_VectorHandle vector, size_t index) {
+	ASSERT(vector != NULL);
+	CADT_VectorReplace(vector, vector->size - 1, index);
+	CADT_VectorResize(vector, vector->size - 1);
 }
 
-AL2O3_EXTERN_C void* CADT_VectorData(CADT_VectorHandle handle) {
-	ASSERT(handle != NULL);
-	CADT_Vector const* vector = (CADT_Vector const*)handle;
+AL2O3_EXTERN_C void* CADT_VectorData(CADT_VectorHandle vector) {
+	ASSERT(vector != NULL);
 	return vector->data;
 }
 
-AL2O3_EXTERN_C size_t CADT_VectorFind(CADT_VectorHandle handle, void const* data) {
-	ASSERT(handle != NULL);
-	CADT_Vector const* vector = (CADT_Vector const*)handle;
+AL2O3_EXTERN_C size_t CADT_VectorFind(CADT_VectorHandle vector, void const* data) {
+	ASSERT(vector != NULL);
 	for (size_t i = 0; i < vector->size; ++i) {
 		if (memcmp(data, vector->data + (i * vector->elementSize), vector->elementSize) == 0) {
 			return i;
@@ -218,9 +206,8 @@ AL2O3_EXTERN_C CADT_VectorHandle CADT_VectorCreateWithAllocator(size_t elementSi
 	return vector;
 }
 
-AL2O3_EXTERN_C void CADT_VectorReserve(CADT_VectorHandle handle, size_t size) {
-	ASSERT(handle != NULL);
-	CADT_Vector * vector = (CADT_Vector *)handle;
+AL2O3_EXTERN_C void CADT_VectorReserve(CADT_VectorHandle vector, size_t size) {
+	ASSERT(vector != NULL);
 
 	// reserve always grews unless ShrinkToFit
 	if(size <= vector->capacity) return;

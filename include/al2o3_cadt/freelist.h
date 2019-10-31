@@ -1,6 +1,4 @@
 #pragma once
-#ifndef AL2O3_CADT_FREELIST_H
-#define AL2O3_CADT_FREELIST_H
 
 #include "al2o3_platform/platform.h"
 
@@ -10,7 +8,7 @@ AL2O3_EXTERN_C CADT_FreeListHandle CADT_FreeListCreate(size_t elementSize, size_
 AL2O3_EXTERN_C void CADT_FreeListDestroy(CADT_FreeListHandle handle);
 AL2O3_EXTERN_C CADT_FreeListHandle CADT_FreeListClone(CADT_FreeListHandle handle);
 
-AL2O3_EXTERN_C void* CADT_FreeListAlloc(CADT_FreeListHandle handle);
-AL2O3_EXTERN_C void CADT_FreeListFree(CADT_FreeListHandle handle, void* ptr);
+AL2O3_EXTERN_C size_t CADT_FreeListElementSize(CADT_FreeListHandle handle);
 
-#endif // end
+AL2O3_EXTERN_C void* CADT_FreeListAlloc(CADT_FreeListHandle handle);
+AL2O3_EXTERN_C void CADT_FreeListRelease(CADT_FreeListHandle handle, void* ptr);

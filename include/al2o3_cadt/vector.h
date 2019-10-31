@@ -1,6 +1,4 @@
 #pragma once
-#ifndef AL2O3_CADT_VECTOR_H
-#define AL2O3_CADT_VECTOR_H
 
 #include "al2o3_platform/platform.h"
 #include "al2o3_memory/memory.h"
@@ -10,8 +8,9 @@ typedef struct CADT_Vector *CADT_VectorHandle;
 
 AL2O3_EXTERN_C CADT_VectorHandle CADT_VectorCreate(size_t elementSize);
 AL2O3_EXTERN_C CADT_VectorHandle CADT_VectorCreateWithAllocator(size_t elementSize, Memory_Allocator* allocator);
-
 AL2O3_EXTERN_C void CADT_VectorDestroy(CADT_VectorHandle handle);
+
+AL2O3_EXTERN_C Memory_Allocator* CADT_VectorGetAllocator(CADT_VectorHandle handle);
 AL2O3_EXTERN_C CADT_VectorHandle CADT_VectorClone(CADT_VectorHandle handle);
 
 AL2O3_EXTERN_C size_t CADT_VectorElementSize(CADT_VectorHandle handle);
@@ -49,6 +48,5 @@ AL2O3_EXTERN_C size_t CADT_VectorFind(CADT_VectorHandle handle, void const	* dat
 #define CADT_VectorCreate(size) ((Memory_TrackerPushNextSrcLoc(__FILE__, __LINE__, __FUNCTION__)) ? CADT_VectorCreate(size) : NULL)
 #define CADT_VectorCreateWithAllocator(size, allocator) ((Memory_TrackerPushNextSrcLoc(__FILE__, __LINE__, __FUNCTION__)) ? CADT_VectorCreateWithAllocator(size, allocator) : NULL)
 #define CADT_VectorReserve(handle, size) Memory_TrackerPushNextSrcLoc(__FILE__, __LINE__, __FUNCTION__); CADT_VectorReserve(handle, size)
-#endif
 
-#endif // AL2O3_CADT_MESH_H
+#endif

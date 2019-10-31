@@ -1,7 +1,4 @@
 #pragma once
-#ifndef GFX_CADT_DICT_H
-#define GFX_CADT_DICT_H
-
 #include "al2o3_platform/platform.h"
 
 #define CADT_DECLARE_DICT(postfix, keytype, valuetype) \
@@ -25,5 +22,3 @@ CADT_DECLARE_DICT(U32, uint32_t, uint32_t)
 CADT_DECLARE_DICT(U64, uint64_t, uint64_t)
 
 #undef CADT_DECLARE_DICT
-
-#endif // GFX_CADT_MESH_H

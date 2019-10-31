@@ -43,15 +43,13 @@ AL2O3_EXTERN_C CADT_FreeListHandle CADT_FreeListCreate(size_t elementSize, size_
 	return freelist;
 }
 
-AL2O3_EXTERN_C void CADT_FreeListDestroy(CADT_FreeListHandle handle) {
-	ASSERT(handle != NULL);
-	CADT_FreeList *freelist = (CADT_FreeList *) handle;
+AL2O3_EXTERN_C void CADT_FreeListDestroy(CADT_FreeListHandle freelist) {
+	ASSERT(freelist != NULL);
 	MEMORY_FREE(freelist);
 }
 
-AL2O3_EXTERN_C CADT_FreeListHandle CADT_FreeListClone(CADT_FreeListHandle handle) {
-	ASSERT(handle != NULL);
-	CADT_FreeList const *ofreelist = (CADT_FreeList const *) handle;
+AL2O3_EXTERN_C CADT_FreeListHandle CADT_FreeListClone(CADT_FreeListHandle ofreelist) {
+	ASSERT(ofreelist != NULL);
 	size_t const size = sizeof(CADT_FreeList) + sizeof(ofreelist->elementSize) * ofreelist->capacity;
 
 	CADT_FreeList *freelist = MEMORY_MALLOC(size);
@@ -62,10 +60,13 @@ AL2O3_EXTERN_C CADT_FreeListHandle CADT_FreeListClone(CADT_FreeListHandle handle
 
 	return freelist;
 }
+AL2O3_EXTERN_C size_t CADT_FreeListElementSize(CADT_FreeListHandle freelist) {
+	ASSERT(freelist != NULL);
+	return freelist->elementSize;
+}
 
-AL2O3_EXTERN_C void *CADT_FreeListAlloc(CADT_FreeListHandle handle) {
-	ASSERT(handle != NULL);
-	CADT_FreeList *freelist = (CADT_FreeList *) handle;
+AL2O3_EXTERN_C void *CADT_FreeListAlloc(CADT_FreeListHandle freelist) {
+	ASSERT(freelist != NULL);
 
 	if (freelist->headIndex == END_OF_LIST_SENTINEL) {
 		return NULL;
@@ -77,10 +78,9 @@ AL2O3_EXTERN_C void *CADT_FreeListAlloc(CADT_FreeListHandle handle) {
 	return data;
 }
 
-AL2O3_EXTERN_C void CADT_FreeListFree(CADT_FreeListHandle handle, void *ptr) {
-	ASSERT(handle != NULL);
+AL2O3_EXTERN_C void CADT_FreeListRelease(CADT_FreeListHandle freelist, void *ptr) {
+	ASSERT(freelist != NULL);
 	ASSERT(ptr != NULL);
-	CADT_FreeList *freelist = (CADT_FreeList *) handle;
 
 	uint8_t *data = (uint8_t *) (freelist + 1);
 	ASSERT((uint8_t *) ptr >= data);

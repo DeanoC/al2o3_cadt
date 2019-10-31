@@ -162,3 +162,175 @@ TEST_CASE("CVector Swap/Replace/Remove", "[CADT CVector]") {
 
 	CADT_VectorDestroy(handle);
 }
+
+#include "al2o3_cadt/vector.hpp"
+
+TEST_CASE("Cadt::vector create/destroy", "[CADT CVector]") {
+	auto vec = Cadt::Vector<uint32_t>::Create();
+	REQUIRE(vec);
+	Cadt::Vector<uint32_t>::Destroy(vec);
+}
+
+TEST_CASE("Cadt::vector Initial", "[CADT CVector]") {
+	auto vec = Cadt::Vector<uint32_t>::Create();
+	REQUIRE(vec);
+	REQUIRE( vec->capacity() == 0);
+	REQUIRE( vec->size() >= 0);
+	REQUIRE( vec->data() == NULL);
+	Cadt::Vector<uint32_t>::Destroy(vec);
+}
+
+TEST_CASE("Cadt::vector At", "[CADT CVector]") {
+	auto vec = Cadt::Vector<uint8_t>::Create();
+	REQUIRE(vec);
+	uint8_t e0 = 9;
+	uint8_t e1 = 10;
+
+	REQUIRE(vec->push(e0) == 0);
+	REQUIRE(vec->push(e1) == 1);
+
+	auto e0p = vec->at(0);
+	REQUIRE(e0p == 9);
+	auto e1p = vec->at(1);
+	REQUIRE(e1p == 10);
+
+	vec->resize(1);
+	e0p = vec->at(0);
+	REQUIRE(e0p == 9);
+	vec->popAndDiscard();
+	REQUIRE(vec->size() == 0);
+
+	vec->Destroy(vec);
+}
+
+TEST_CASE("Cadt::vector Resizes and At", "[CADT CVector]") {
+	auto vec = Cadt::Vector<uint32_t>::Create();
+	REQUIRE(vec);
+
+	vec->resize(10);
+	REQUIRE( vec->size() == 10);
+	REQUIRE( vec->capacity() >= 10);
+	REQUIRE( vec->data() != NULL);
+	vec->resize(5);
+	REQUIRE( vec->size() == 5);
+	REQUIRE( vec->capacity() >= 10);
+	vec->resize(15);
+	REQUIRE( vec->size() == 15);
+	REQUIRE( vec->capacity() >= 15);
+
+	vec->resizeNoInit(0);
+	vec->resize(5);
+	REQUIRE(vec->at(0) == 0);
+	REQUIRE(vec->at(1) == 0);
+	REQUIRE(vec->at(2) == 0);
+	REQUIRE(vec->at(3) == 0);
+	REQUIRE(vec->at(4) == 0);
+
+	vec->Destroy(vec);
+}
+
+TEST_CASE("Cadt::vector Push/Pop/Peek", "[CADT CVector]") {
+	auto vec = Cadt::Vector<uint8_t>::Create();
+	REQUIRE(vec);
+	uint8_t e = 9;
+	vec->push(e);
+	REQUIRE( vec->size() == 1);
+	REQUIRE( vec->capacity() >= 1);
+	REQUIRE( vec->peek() == 9);
+	auto r = vec->pop();
+	REQUIRE( vec->size() == 0);
+	REQUIRE( vec->capacity() >= 1);
+
+	vec->destroy();
+}
+
+TEST_CASE("Cadt::vector IsEmpty", "[CADT CVector]") {
+	auto vec = Cadt::Vector<uint8_t>::Create();
+	REQUIRE(vec);
+	REQUIRE(vec->empty());
+	uint8_t e = 9;
+	vec->push(e);
+	REQUIRE(!vec->empty());
+	vec->push(e);
+	REQUIRE(!vec->empty());
+	vec->popAndDiscard();
+	vec->popAndDiscard();
+	REQUIRE(vec->empty());
+	vec->destroy();
+}
+
+TEST_CASE("Cadt::vector Remove", "[CADT CVector]") {
+	auto vec = Cadt::Vector<uint8_t>::Create();
+	REQUIRE(vec);
+	uint8_t e0 = 9;
+	uint8_t e1 = 19;
+
+	REQUIRE(vec->push(e0) == 0);
+	REQUIRE(vec->push(e1) == 1);
+	REQUIRE(vec->push(e0) == 2);
+	REQUIRE(vec->push(e1) == 3);
+	REQUIRE(vec->size() == 4);
+
+	vec->remove(3);
+	REQUIRE(vec->size() == 3);
+	vec->remove(0);
+	REQUIRE(vec->size() == 2);
+	auto e1p = vec->at(0);
+	REQUIRE(e1p == 19);
+	auto e0p = vec->at(1);
+	REQUIRE(e0p == 9);
+	vec->remove(1);
+	REQUIRE(vec->size() == 1);
+	vec->remove(0);
+	REQUIRE(vec->size() == 0);
+
+	vec->destroy();
+}
+
+TEST_CASE("Cadt::vector Swap/Replace/Remove", "[CADT CVector]") {
+	auto vec = Cadt::Vector<uint32_t>::Create();
+	REQUIRE(vec);
+
+	vec->resize(5);
+	REQUIRE(vec->at(0) == 0);
+	vec->at(1) = 10;
+	vec->at(2) = 20;
+	vec->at(3) = 30;
+	vec->at(4) = 40;
+	REQUIRE(vec->size() == 5);
+
+	vec->replace(4, 1);
+	REQUIRE(vec->at(1) == 40);
+	REQUIRE(vec->at(4) == 40);
+	vec->swap(2, 3);
+	REQUIRE(vec->at(2) == 30);
+	REQUIRE(vec->at(3) == 20);
+	vec->swapRemove(0);
+	REQUIRE(vec->at(0) == 40);
+	REQUIRE(vec->at(1) == 40);
+	REQUIRE(vec->size() == 4);
+	vec->remove(1);
+
+	REQUIRE(vec->at(0) == 40);
+	REQUIRE(vec->at(1) == 30);
+	REQUIRE(vec->size() == 3);
+
+
+	vec->destroy();
+}
+
+struct NotPod{
+	NotPod() {
+		ptr = MEMORY_MALLOC(10);
+	}
+	~NotPod() {
+		MEMORY_FREE(ptr);
+	}
+	void* ptr;
+};
+/*
+TEST_CASE("Cadt::vector not pod", "[CADT CVector]") {
+	auto vec = Cadt::Vector<NotPod>::Create();
+
+}
+*/
