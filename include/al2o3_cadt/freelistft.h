@@ -17,10 +17,13 @@ typedef struct CADT_FreeListFT {
 
 typedef struct CADT_FreeListFT *CADT_FreeListFTHandle;
 
-AL2O3_EXTERN_C CADT_FreeListFTHandle CADT_FreeListFTCreate(size_t elementSize, size_t blockCount, size_t maxBlocks);
-AL2O3_EXTERN_C void CADT_FreeListFTDestroy(CADT_FreeListFTHandle handle);
-
+// free threaded (any thread can call at any time)
 AL2O3_EXTERN_C size_t CADT_FreeListFTElementSize(CADT_FreeListFTHandle handle);
-
 AL2O3_EXTERN_C void* CADT_FreeListFTAlloc(CADT_FreeListFTHandle fl);
 AL2O3_EXTERN_C void CADT_FreeListFTRelease(CADT_FreeListFTHandle handle, void* ptr);
+
+// not thread safe!
+AL2O3_EXTERN_C CADT_FreeListFTHandle CADT_FreeListFTCreate(size_t elementSize, size_t blockCount, size_t maxBlocks);
+AL2O3_EXTERN_C void CADT_FreeListFTDestroy(CADT_FreeListFTHandle handle);
+AL2O3_EXTERN_C void CADT_FreeListFTReset(CADT_FreeListFTHandle handle, bool freeAllocatedMemory);
+

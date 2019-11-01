@@ -5,7 +5,7 @@
 #include "al2o3_cadt/freelistft.h"
 
 #define END_OF_LIST_SENTINEL (~0UL)
-static bool AllocNewBlock(CADT_FreeListFT* fl) {
+static bool AllocNewBlock(CADT_FreeListFT *fl) {
 
 	// first thing we need to do is claim our new index range
 	uint64_t baseIndex =
@@ -30,20 +30,19 @@ static bool AllocNewBlock(CADT_FreeListFT* fl) {
 	Thread_AtomicStorePtrRelaxed(fl->blocks + (baseIndex >> fl->elementsPerBlockShift), base);
 
 	// init free list for new block
-	uint8_t * workPtr = base;
+	uint8_t *workPtr = base;
 	for (uint32_t i = 0u; i < fl->elementsPerBlockMask; ++i) {
-		*((uintptr_t *)workPtr) = (uintptr_t) (workPtr + fl->elementSize);
+		*((uintptr_t *) workPtr) = (uintptr_t) (workPtr + fl->elementSize);
 		workPtr += fl->elementSize;
 	}
 
-
 	// link the new block into the free list and attach existing free list to the
 	// end of this block
-Redo:;
+	Redo:;
 	uint64_t const head = Thread_AtomicLoad64Relaxed(&fl->freeListHead);
-	*((uintptr_t *)workPtr) = head;
+	*((uintptr_t *) workPtr) = head;
 
-	if (Thread_AtomicCompareExchange64Relaxed(&fl->freeListHead, head, (uint64_t)base) != head) {
+	if (Thread_AtomicCompareExchange64Relaxed(&fl->freeListHead, head, (uint64_t) base) != head) {
 		goto Redo; // something changed reverse the transaction
 	}
 	return true;
@@ -83,17 +82,17 @@ AL2O3_EXTERN_C CADT_FreeListFTHandle CADT_FreeListFTCreate(size_t elementSize, s
 	Thread_AtomicStore64Relaxed(&fl->totalElementsAllocated, blockCount);
 
 	// init free list for new block
-	uint8_t * workPtr = base;
-	for (uint32_t i = 0u; i < (blockCount-1); ++i) {
-		*((uintptr_t *)workPtr) = (uintptr_t) (workPtr + fl->elementSize);
+	uint8_t *workPtr = base;
+	for (uint32_t i = 0u; i < (blockCount - 1); ++i) {
+		*((uintptr_t *) workPtr) = (uintptr_t) (workPtr + fl->elementSize);
 		workPtr += fl->elementSize;
 	}
 
 	// fix last index to point to the invalid marker
-	*((uintptr_t *)workPtr) = END_OF_LIST_SENTINEL;
+	*((uintptr_t *) workPtr) = END_OF_LIST_SENTINEL;
 
 	// point head to start of the free list
-	Thread_AtomicStore64Relaxed(&fl->freeListHead, (uintptr_t)base);
+	Thread_AtomicStore64Relaxed(&fl->freeListHead, (uintptr_t) base);
 
 	return fl;
 }
@@ -105,9 +104,8 @@ AL2O3_EXTERN_C void CADT_FreeListFTDestroy(CADT_FreeListFTHandle fl) {
 
 	// 0th block is embedded
 	for (uint32_t i = 1u; i < fl->maxBlocks; ++i) {
-		void *ptr = Thread_AtomicLoadPtrRelaxed(&fl->blocks[i]);
-		if (ptr) {
-			MEMORY_FREE(ptr);
+		if (fl->blocks[i].nonatomic) {
+			MEMORY_FREE(fl->blocks[i].nonatomic);
 		}
 	}
 
@@ -122,14 +120,14 @@ AL2O3_EXTERN_C size_t CADT_FreeListFTElementSize(CADT_FreeListFTHandle freelist)
 AL2O3_EXTERN_C void *CADT_FreeListFTAlloc(CADT_FreeListFTHandle fl) {
 	ASSERT(fl != NULL);
 
-Redo:;
+	Redo:;
 	uint64_t const head = Thread_AtomicLoad64Relaxed(&fl->freeListHead);
 	// check to see if the free list is empty
 	if (head == END_OF_LIST_SENTINEL) {
 		// we only allow N thread to allocate at once, the other spin wait
 		// this stops the potentially fatal incorrect failure if N > maxBlocks
 		uint64_t isAllocating = Thread_AtomicFetchAdd64Relaxed(&fl->currentAllocating, 1);
-		if(isAllocating <= 2) {
+		if (isAllocating <= 2) {
 			// we now allocate a new block in a lock free way
 			bool retry = AllocNewBlock(fl);
 			if (retry == false) {
@@ -141,7 +139,7 @@ Redo:;
 		goto Redo;
 	}
 
-	uintptr_t next = *((uintptr_t*)head);
+	uintptr_t next = *((uintptr_t *) head);
 
 	if (Thread_AtomicCompareExchange64Relaxed(&fl->freeListHead, head, next) != head) {
 		goto Redo; // something changed reverse the transaction
@@ -149,9 +147,9 @@ Redo:;
 
 	// the item is now ours to abuse
 	// clear it out ready for its new life
-	memset((void*)head, 0x0, fl->elementSize);
+	memset((void *) head, 0x0, fl->elementSize);
 
-	return (void*)head;
+	return (void *) head;
 
 }
 
@@ -159,14 +157,46 @@ AL2O3_EXTERN_C void CADT_FreeListFTRelease(CADT_FreeListFTHandle fl, void *vptr)
 	ASSERT(fl != NULL);
 	ASSERT(vptr != NULL);
 
-Redo:;
+	Redo:;
 	uint64_t const head = Thread_AtomicLoad64Relaxed(&fl->freeListHead);
-	uint64_t ptr = (uint64_t)vptr;
-	*((uintptr_t*)ptr) = head;
+	uint64_t ptr = (uint64_t) vptr;
+	*((uintptr_t *) ptr) = head;
 
 	if (Thread_AtomicCompareExchange64Relaxed(&fl->freeListHead, head, ptr) != head) {
 		goto Redo; // something changed reverse the transaction
 	}
 }
 
+AL2O3_EXTERN_C void CADT_FreeListFTReset(CADT_FreeListFTHandle fl, bool freeAllocatedMemory) {
+	ASSERT(fl != NULL);
+
+	uintptr_t endLink = END_OF_LIST_SENTINEL;
+	for (uint32_t i = fl->maxBlocks-1; i >= 1; --i) {
+		if (fl->blocks[i].nonatomic) {
+			if (!freeAllocatedMemory) {
+				uint8_t *workPtr = (uint8_t *) fl->blocks[i].nonatomic;
+				for (uint32_t i = 0u; i < fl->elementsPerBlockMask; ++i) {
+					*((uintptr_t *) workPtr) = (uintptr_t) (workPtr + fl->elementSize);
+					workPtr += fl->elementSize;
+				}
+				*((uintptr_t *) workPtr) = endLink;
+				endLink = (uintptr_t) fl->blocks[i].nonatomic;
+			} else {
+				MEMORY_FREE(fl->blocks[i].nonatomic);
+				fl->blocks[i].nonatomic = NULL;
+			}
+		}
+	}
+
+	uint8_t *workPtr = (uint8_t *) fl->blocks[0].nonatomic;
+	for (uint32_t i = 0u; i < fl->elementsPerBlockMask; ++i) {
+		*((uintptr_t *) workPtr) = (uintptr_t) (workPtr + fl->elementSize);
+		workPtr += fl->elementSize;
+	}
+	*((uintptr_t *) workPtr) = endLink;
+	fl->freeListHead.nonatomic = (uint64_t) fl->blocks[0].nonatomic;
+	if(freeAllocatedMemory){
+		fl->totalElementsAllocated.nonatomic = fl->elementsPerBlockMask+1;
+	}
+}
 

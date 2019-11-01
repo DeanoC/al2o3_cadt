@@ -253,3 +253,30 @@ TEST_CASE("CADT_FreeListFT adhoc Alloc/Free 2", "[CADT CADT_FreeList]") {
 	CADT_FreeListFTDestroy(handle);
 
 }
+
+TEST_CASE("CADT_FreeListFT reset", "[CADT CADT_FreeList]") {
+	static const int NUM_ENTRIES = 16 * 2;
+	CADT_FreeListFTHandle handle = CADT_FreeListFTCreate(sizeof(uintptr_t) + 2, NUM_ENTRIES / 2, 2);
+	REQUIRE(handle);
+	uintptr_t *ptrs[NUM_ENTRIES];
+	for (int i = 0; i < NUM_ENTRIES; ++i) {
+		uintptr_t *d0 = (uintptr_t *) CADT_FreeListFTAlloc(handle);
+		*d0 = 42;
+		ptrs[i] = d0;
+	}
+	LOGINFO("The next 2 WARN are expected as we are testing overflow");
+	REQUIRE(CADT_FreeListFTAlloc(handle) == nullptr);
+	CADT_FreeListFTReset(handle, false);
+	for (int i = 0; i < NUM_ENTRIES; ++i) {
+		REQUIRE(CADT_FreeListFTAlloc(handle) != nullptr);
+	}
+	LOGINFO("The next 2 WARN are expected as we are testing overflow");
+	REQUIRE(CADT_FreeListFTAlloc(handle) == nullptr);
+	CADT_FreeListFTReset(handle, true);
+	for (int i = 0; i < NUM_ENTRIES; ++i) {
+		REQUIRE(CADT_FreeListFTAlloc(handle) != nullptr);
+	}
+	LOGINFO("The next 2 WARN are expected as we are testing overflow");
+	REQUIRE(CADT_FreeListFTAlloc(handle) == nullptr);
+
+}
