@@ -156,3 +156,100 @@ TEST_CASE("Cadt::FreeList not POD", "[CADT CADT_FreeList]") {
 
 }
 */
+
+#include "al2o3_cadt/freelistft.h"
+TEST_CASE("CADT_FreeListFT create/destroy", "[CADT CADT_FreeList]") {
+	CADT_FreeListFTHandle handle = CADT_FreeListFTCreate(sizeof(uintptr_t)+2, 16, 4);
+	REQUIRE(handle);
+	REQUIRE(CADT_FreeListFTElementSize(handle) == sizeof(uintptr_t)+2);
+	CADT_FreeListFTDestroy(handle);
+}
+
+TEST_CASE("CADT_FreeListFT Single Alloc/Free", "[CADT CADT_FreeList]") {
+	CADT_FreeListFTHandle handle = CADT_FreeListFTCreate(sizeof(uintptr_t)+2, 16, 4);
+	REQUIRE(handle);
+	uintptr_t* d = (uintptr_t*) CADT_FreeListFTAlloc(handle);
+	*d = 42;
+	CADT_FreeListFTRelease(handle, d);
+	REQUIRE(*d != 42);
+	CADT_FreeListFTDestroy(handle);
+}
+
+TEST_CASE("CADT_FreeListFT Multiple Alloc/Free", "[CADT CADT_FreeList]") {
+	CADT_FreeListFTHandle handle = CADT_FreeListFTCreate(sizeof(uintptr_t)+2, 16, 4);
+	REQUIRE(handle);
+	uintptr_t* d0 = (uintptr_t*) CADT_FreeListFTAlloc(handle);
+	*d0 = 42;
+	uintptr_t* d1 = (uintptr_t*) CADT_FreeListFTAlloc(handle);
+	*d1 = 3;
+	uintptr_t* d2 = (uintptr_t*) CADT_FreeListFTAlloc(handle);
+	*d2 = 13;
+
+	CADT_FreeListFTRelease(handle, d2);
+	CADT_FreeListFTRelease(handle, d1);
+	CADT_FreeListFTRelease(handle, d0);
+
+	CADT_FreeListFTDestroy(handle);
+}
+
+TEST_CASE("CADT_FreeListFT adhoc Alloc/Free", "[CADT CADT_FreeList]") {
+	static const int NUM_ENTRIES = 16;
+	CADT_FreeListFTHandle handle = CADT_FreeListFTCreate(sizeof(uintptr_t)+2, NUM_ENTRIES, 1);
+	REQUIRE(handle);
+	uintptr_t* ptrs[NUM_ENTRIES];
+	for(int i = 0;i < NUM_ENTRIES;++i) {
+		uintptr_t* d0 = (uintptr_t*) CADT_FreeListFTAlloc(handle);
+		*d0 = 42;
+		ptrs[i] = d0;
+	}
+
+	LOGINFO("The next 2 WARN are expected as we are testing overflow");
+	REQUIRE(CADT_FreeListFTAlloc(handle) == nullptr);
+	CADT_FreeListFTRelease(handle, ptrs[0]);
+	uintptr_t* p0 = (uintptr_t*) CADT_FreeListFTAlloc(handle);
+	REQUIRE(p0 != nullptr);
+	REQUIRE(p0 == ptrs[0]);
+
+	CADT_FreeListFTRelease(handle, ptrs[5]);
+
+	uintptr_t* p1 = (uintptr_t*) CADT_FreeListFTAlloc(handle);
+	REQUIRE(p1 != nullptr);
+	REQUIRE(p1 == ptrs[5]);
+	for(int i = 0;i < NUM_ENTRIES;++i) {
+		CADT_FreeListFTRelease(handle, ptrs[i]);
+	}
+
+	CADT_FreeListFTDestroy(handle);
+
+}
+
+TEST_CASE("CADT_FreeListFT adhoc Alloc/Free 2", "[CADT CADT_FreeList]") {
+	static const int NUM_ENTRIES = 16 * 2;
+	CADT_FreeListFTHandle handle = CADT_FreeListFTCreate(sizeof(uintptr_t)+2, NUM_ENTRIES/2, 2);
+	REQUIRE(handle);
+	uintptr_t* ptrs[NUM_ENTRIES];
+	for(int i = 0;i < NUM_ENTRIES;++i) {
+		uintptr_t* d0 = (uintptr_t*) CADT_FreeListFTAlloc(handle);
+		*d0 = 42;
+		ptrs[i] = d0;
+	}
+
+	LOGINFO("The next 2 WARN are expected as we are testing overflow");
+	REQUIRE(CADT_FreeListFTAlloc(handle) == nullptr);
+	CADT_FreeListFTRelease(handle, ptrs[0]);
+	uintptr_t* p0 = (uintptr_t*) CADT_FreeListFTAlloc(handle);
+	REQUIRE(p0 != nullptr);
+	REQUIRE(p0 == ptrs[0]);
+
+	CADT_FreeListFTRelease(handle, ptrs[5]);
+
+	uintptr_t* p1 = (uintptr_t*) CADT_FreeListFTAlloc(handle);
+	REQUIRE(p1 != nullptr);
+	REQUIRE(p1 == ptrs[5]);
+	for(int i = 0;i < NUM_ENTRIES;++i) {
+		CADT_FreeListFTRelease(handle, ptrs[i]);
+	}
+
+	CADT_FreeListFTDestroy(handle);
+
+}

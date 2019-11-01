@@ -24,6 +24,7 @@ set(Deps
 		al2o3_memory
 		al2o3_cmath
 		al2o3_stb
+		al2o3_thread
 		utils_misccpp
 		)
 ADD_LIB2(${LibName} "${Src}" "${Deps}")

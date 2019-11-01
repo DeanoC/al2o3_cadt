@@ -11,6 +11,7 @@ typedef struct CADT_Vector {
 
 	uint8_t* data;
 } CADT_Vector;
+
 AL2O3_EXTERN_C void CADT_VectorDestroy(CADT_VectorHandle vector) {
 	ASSERT(vector != NULL);
 	if(vector->data != NULL) {

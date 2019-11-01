@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="VcsDirectoryMappings">
+    <mapping directory="$PROJECT_DIR$" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/cmake-build-debug/_deps/al2o3-src" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/cmake-build-debug/_deps/al2o3_os_testvectors-src" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/cmake-build-debug/_deps/catchorg_catch2-src" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/out_bin/test_data/al2o3_os" vcs="Git" />
+  </component>
+</project>
