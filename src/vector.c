@@ -13,7 +13,9 @@ typedef struct CADT_Vector {
 } CADT_Vector;
 
 AL2O3_EXTERN_C void CADT_VectorDestroy(CADT_VectorHandle vector) {
-	ASSERT(vector != NULL);
+	if(!vector) {
+		return;
+	}
 	if(vector->data != NULL) {
 		MEMORY_ALLOCATOR_FREE(vector->allocator, vector->data);
 	}
